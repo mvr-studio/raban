@@ -1,0 +1,59 @@
+{
+  "name": "rbbn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "postinstall": "prisma generate",
+    "lint": "next lint",
+    "start": "next start"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.4.9",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@hookform/resolvers": "^2.9.10",
+    "@next-auth/prisma-adapter": "^1.0.5",
+    "@prisma/client": "^4.8.0",
+    "@tanstack/react-query": "^4.20.0",
+    "@trpc/client": "^10.8.1",
+    "@trpc/next": "^10.8.1",
+    "@trpc/react-query": "^10.8.1",
+    "@trpc/server": "^10.8.1",
+    "dayjs": "^1.11.7",
+    "focus-visible": "^5.2.0",
+    "framer-motion": "^8.5.3",
+    "i": "^0.3.7",
+    "minhashjs": "^1.0.1",
+    "next": "13.1.2",
+    "next-auth": "^4.18.7",
+    "nodemailer": "^6.9.0",
+    "npm": "^9.4.0",
+    "polished": "^4.2.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.42.1",
+    "react-icons": "^4.7.1",
+    "recharts": "^2.3.2",
+    "shrink-string": "^3.1.4",
+    "slugify": "^1.6.5",
+    "superjson": "1.9.1",
+    "zipson": "^0.2.12",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "prisma": "^4.8.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  },
+  "ct3aMetadata": {
+    "initVersion": "7.3.2"
+  }
+}
