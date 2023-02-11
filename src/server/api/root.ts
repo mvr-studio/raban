@@ -3,6 +3,7 @@ import { workspacesRouter } from './routers/workspaces'
 import { eventsRouter } from './routers/events'
 import { appsRouter } from './routers/apps'
 import { userRouter } from './routers/user'
+import { boardsRouter } from './routers/boards'
 
 /**
  * This is the primary router for your server.
@@ -13,7 +14,8 @@ export const appRouter = createTRPCRouter({
   workspaces: workspacesRouter,
   events: eventsRouter,
   apps: appsRouter,
-  user: userRouter
+  user: userRouter,
+  boards: boardsRouter
 })
 
 // export type definition of API

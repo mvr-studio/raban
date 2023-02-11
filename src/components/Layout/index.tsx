@@ -15,9 +15,10 @@ type PageProps = {
 interface LayoutProps {
   children: React.ReactNode
   page?: PageProps
+  noPadding?: boolean
 }
 
-const Layout = ({ children, page }: LayoutProps) => {
+const Layout = ({ children, page, noPadding = false }: LayoutProps) => {
   const { status: sessionStatus } = useSession()
   const router = useRouter()
   const { data: applications, isLoading: areAppsLoading } = api.apps.findAll.useQuery()
@@ -51,7 +52,7 @@ const Layout = ({ children, page }: LayoutProps) => {
       <Grid templateColumns={['1fr 2fr', '1fr 3fr', '1fr 3fr', '1fr 5fr']} flex={1}>
         <SideMenu />
         <Flex direction="column" padding="1rem 2rem" backgroundColor="gray.50" minHeight="100vh">
-          <Stack flex={1} gap="2rem">
+          <Stack flex={1} gap={noPadding ? 0 : '2rem'}>
             {page && (
               <Flex justify="space-between">
                 <Stack>

@@ -18,7 +18,6 @@ export const appsRouter = createTRPCRouter({
     })
   }),
   create: protectedProcedure.input(appCreateSchema).mutation(async ({ ctx, input }) => {
-    console.log('>>ST')
     const { user } = ctx.session
     const workspace = await ctx.prisma.workspace.findFirstOrThrow({
       where: { slug: input.workspaceSlug, memberships: { every: { user: { id: user.id } } } }

@@ -2,7 +2,6 @@ import {
   Button,
   Stack,
   Icon,
-  IconButton,
   Flex,
   Menu,
   MenuButton,
@@ -16,29 +15,43 @@ import {
   PopoverTrigger,
   Link,
   Box,
-  Avatar
+  Avatar,
+  Heading
 } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
-import { TbLayoutDashboard, TbAlertOctagon, TbSettings, TbChevronDown, TbPlus } from 'react-icons/tb'
+import { TbLayoutDashboard, TbAlertOctagon, TbPlus, TbBox, TbColumns, TbRefresh } from 'react-icons/tb'
 import { api } from 'utils/api'
 import NextImage from 'next/image'
-import { useSettings } from 'hooks'
+import { useSettings, useWorkspace } from 'hooks'
 
 const SideMenu = () => {
   const router = useRouter()
   const { settings, onAppChange } = useSettings()
-  const { data: apps } = api.apps.findAll.useQuery()
   const workspaceSlug = settings?.workspaceSlug
+  const { data: workspace } = useWorkspace({ slug: workspaceSlug })
+  const { data: apps } = api.apps.findAll.useQuery()
   const appSlug = settings?.appSlug
   const { data: currentApp } = api.apps.findOne.useQuery({ appSlug })
   const hasApps = (apps || [])?.length > 0
 
-  const BASE_URL = `/${workspaceSlug}/${appSlug}`
+  const BASE_URL = `/${workspaceSlug}`
+  const APP_BASE_URL = `${BASE_URL}/${appSlug}`
 
-  const MENU_ITEMS = [
-    { label: 'Dashboard', url: BASE_URL, icon: TbLayoutDashboard },
-    { label: 'Events', url: `${BASE_URL}/events`, icon: TbAlertOctagon }
+  const SIDE_MENU = [
+    {
+      title: workspace?.name,
+      isVisible: true,
+      items: [{ label: 'Overview', url: BASE_URL, icon: TbBox }]
+    },
+    {
+      title: currentApp?.name,
+      isVisible: hasApps,
+      items: [
+        { label: 'Dashboard', url: APP_BASE_URL, icon: TbLayoutDashboard },
+        { label: 'Events', url: `${APP_BASE_URL}/events`, icon: TbAlertOctagon }
+      ]
+    }
   ]
 
   return (
@@ -50,11 +63,7 @@ const SideMenu = () => {
           </NextLink>
           <Popover>
             <PopoverTrigger>
-              <IconButton
-                icon={<Icon as={TbSettings} boxSize="1.25rem" color="gray.600" />}
-                variant="ghost"
-                aria-label="Settings"
-              />
+              <Avatar name="Tomasz Marciniak" size="sm" cursor="pointer" />
             </PopoverTrigger>
             <PopoverContent>
               <PopoverArrow />
@@ -66,9 +75,44 @@ const SideMenu = () => {
             </PopoverContent>
           </Popover>
         </Flex>
+      </Stack>
+      <Stack flex={1} gap="1rem" paddingX="1rem">
+        {SIDE_MENU.map((section, i) => {
+          if (!section.isVisible) return
+          return (
+            <Stack key={i}>
+              <Heading size="xs">{section.title}</Heading>
+              {section.items.map((item) => {
+                const isActive = router.asPath === item.url
+                return (
+                  <NextLink href={item.url} key={i}>
+                    <Button
+                      variant="ghost"
+                      justifyContent="flex-start"
+                      leftIcon={<Icon as={item.icon} boxSize="1.5rem" />}
+                      paddingX="0.5rem"
+                      width="100%"
+                      backgroundColor={isActive ? 'gray.100' : 'transparent'}
+                      color={isActive ? 'gray.900' : 'gray.600'}
+                    >
+                      {item.label}
+                    </Button>
+                  </NextLink>
+                )
+              })}
+            </Stack>
+          )
+        })}
+      </Stack>
+      <Box padding="1rem">
         {hasApps && (
           <Menu>
-            <MenuButton as={Button} rightIcon={<TbChevronDown />}>
+            <MenuButton
+              as={Button}
+              leftIcon={<Avatar name={currentApp?.name?.[0]} size="sm" borderRadius="0.5rem" />}
+              rightIcon={<TbRefresh />}
+              width="100%"
+            >
               {currentApp?.name}
             </MenuButton>
             <MenuList>
@@ -84,42 +128,6 @@ const SideMenu = () => {
             </MenuList>
           </Menu>
         )}
-      </Stack>
-      {hasApps ? (
-        <Stack flex={1} paddingX="1rem">
-          {MENU_ITEMS.map((menuItem, i) => {
-            const isActive = router.asPath === menuItem.url
-            return (
-              <NextLink href={menuItem.url} key={i}>
-                <Button
-                  variant="ghost"
-                  justifyContent="flex-start"
-                  leftIcon={<Icon as={menuItem.icon} boxSize="1.5rem" />}
-                  paddingX="0.5rem"
-                  width="100%"
-                  backgroundColor={isActive ? 'gray.100' : 'transparent'}
-                  color={isActive ? 'gray.900' : 'gray.600'}
-                >
-                  {menuItem.label}
-                </Button>
-              </NextLink>
-            )
-          })}
-        </Stack>
-      ) : (
-        <Box flex={1} />
-      )}
-      <Box padding="1rem">
-        <NextLink href="/account">
-          <Button
-            leftIcon={<Avatar name="Tomasz Marciniak" size="sm" />}
-            width="100%"
-            justifyContent="flex-start"
-            variant="ghost"
-          >
-            User
-          </Button>
-        </NextLink>
       </Box>
     </Stack>
   )

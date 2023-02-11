@@ -1,24 +1,71 @@
-import { Heading, HStack, SimpleGrid, Stack, Icon, Link, useToken, IconButton, Tooltip } from '@chakra-ui/react'
-import { Layout } from 'components'
+import {
+  Heading,
+  HStack,
+  SimpleGrid,
+  Stack,
+  Icon,
+  useToken,
+  IconButton,
+  Tooltip,
+  Card,
+  useDisclosure,
+  CardProps
+} from '@chakra-ui/react'
+import { Layout, ModalBoardCreate } from 'components'
 import { useSettings } from 'hooks'
 import { NextPage } from 'next'
+import { useRouter } from 'next/router'
 import { rgba } from 'polished'
-import { TbAppWindow, TbPlus, TbUsers } from 'react-icons/tb'
+import { TbAppWindow, TbLayoutColumns, TbPlus, TbUsers } from 'react-icons/tb'
 import { api } from 'utils/api'
-import NextLink from 'next/link'
+
+interface CardButtonProps extends CardProps {
+  label: string
+  onClick: () => void
+  icon: any
+}
+
+const CardButton = ({ label, onClick, icon, ...rest }: CardButtonProps) => (
+  <Card cursor="pointer" padding="1rem" onClick={onClick} {...rest}>
+    <HStack>
+      <Icon as={icon} boxSize="1.5rem" />
+      <Heading size="sm">{label}</Heading>
+    </HStack>
+  </Card>
+)
+
+const CreateButton = ({ onClick, label }: { onClick: () => void; label: string }) => {
+  const [cyan500] = useToken('colors', ['cyan.500'])
+
+  return (
+    <CardButton
+      label={label}
+      onClick={onClick}
+      icon={TbPlus}
+      border="1px solid"
+      borderColor="cyan.500"
+      boxShadow={`0 0.25rem 1rem ${rgba(cyan500, 0.1)}`}
+      backgroundColor="cyan.50"
+      color="cyan.700"
+    />
+  )
+}
 
 const WorkspaceDashboardPage: NextPage = () => {
+  const router = useRouter()
   const { data: settings } = api.user.getSettings.useQuery()
-  const { data: workspace } = api.workspaces.findOne.useQuery({ slug: settings?.workspaceSlug })
-  const [cyan500] = useToken('colors', ['cyan.500'])
+  const workspaceSlug = settings?.workspaceSlug
+  const { data: workspace } = api.workspaces.findOne.useQuery({ slug: workspaceSlug })
+  const { data: boards } = api.boards.findAll.useQuery({ workspaceSlug })
+  const { isOpen: isModalBoardCreateOpen, onToggle: onModalBoardCreateToggle } = useDisclosure()
   const { onAppChange } = useSettings()
   const applications = workspace?.applications
-  const workspaceSlug = settings?.workspaceSlug
+  console.log('>>>BRDZ', boards)
   return (
     <Layout
       page={{
-        title: workspace?.name,
-        subtitle: 'Workspace Overview',
+        title: 'Workspace Overview',
+        subtitle: workspace?.name,
         addon: (
           <HStack>
             <Tooltip label="Workspace Settings">
@@ -28,43 +75,36 @@ const WorkspaceDashboardPage: NextPage = () => {
         )
       }}
     >
-      <Stack gap="0.5rem">
-        <Heading size="sm">Apps</Heading>
-        <SimpleGrid columns={4} gap="1rem">
-          {applications?.map((application) => (
-            <Link
-              backgroundColor="white"
-              padding="1rem"
-              key={application.id}
-              boxShadow="0 0.25rem 1rem rgba(0, 0, 0, 0.05)"
-              borderRadius="0.5rem"
-              border="1px solid"
-              borderColor="gray.200"
-              onClick={() => onAppChange(application.slug)}
-            >
-              <HStack>
-                <Icon as={TbAppWindow} boxSize="1.5rem" />
-                <Heading size="sm">{application.name}</Heading>
-              </HStack>
-            </Link>
-          ))}
-          <Link
-            as={NextLink}
-            href={`/${workspaceSlug}/apps/new`}
-            backgroundColor="cyan.50"
-            color="cyan.700"
-            padding="1rem"
-            boxShadow={`0 0.25rem 1rem ${rgba(cyan500, 0.1)}`}
-            borderRadius="0.5rem"
-            border="1px solid"
-            borderColor="cyan.500"
-          >
-            <HStack>
-              <Icon as={TbPlus} boxSize="1.5rem" />
-              <Heading size="sm">Create App</Heading>
-            </HStack>
-          </Link>
-        </SimpleGrid>
+      <ModalBoardCreate isOpen={isModalBoardCreateOpen} onClose={onModalBoardCreateToggle} />
+      <Stack gap="1.5rem">
+        <Stack gap="0.5rem">
+          <Heading size="sm">Apps</Heading>
+          <SimpleGrid columns={4} gap="1rem">
+            {applications?.map((application) => (
+              <CardButton
+                label={application.name}
+                key={application.id}
+                icon={TbAppWindow}
+                onClick={() => onAppChange(application.slug)}
+              />
+            ))}
+            <CreateButton label="Create App" onClick={() => router.push(`/${workspaceSlug}/apps/new`)} />
+          </SimpleGrid>
+        </Stack>
+        <Stack gap="0.5rem">
+          <Heading size="sm">Boards</Heading>
+          <SimpleGrid columns={4} gap="1rem">
+            {boards?.map((board) => (
+              <CardButton
+                label={board.name}
+                key={board.id}
+                icon={TbLayoutColumns}
+                onClick={() => router.push(`/${workspaceSlug}/boards/${board.slug}`)}
+              />
+            ))}
+            <CreateButton label="Create Board" onClick={onModalBoardCreateToggle} />
+          </SimpleGrid>
+        </Stack>
       </Stack>
     </Layout>
   )
